@@ -1,10 +1,12 @@
+ #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string>
+#include <cmath>
 #include <algorithm>
 #include "Image_Class.h"
 
 using namespace std;
-//Filter 1: Grey Scale
+
 void filter_Grayscale(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
@@ -19,7 +21,7 @@ void filter_Grayscale(Image& img) {
         }
     }
 }
-//Filter 5: detect edges
+
 void filter_DetectEdges(Image& img) {
     filter_Grayscale(img);
     Image target(img.width, img.height);
@@ -45,8 +47,6 @@ void filter_DetectEdges(Image& img) {
     img = target;
 }
 
-
-// Filter 3: Invert Image
 void filter_Invert(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
@@ -57,7 +57,6 @@ void filter_Invert(Image& img) {
     }
 }
 
-// Filter 7: Darken and Lighten Image
 void filter_LightenDarken(Image& img, bool lighten) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
@@ -74,7 +73,7 @@ void filter_LightenDarken(Image& img, bool lighten) {
         }
     }
 }
-// Filter 9: Sunlight
+
 void sunlightFilter(Image& img) {
     for (int y = 0; y < img.height; ++y) {
         for (int x = 0; x < img.width; ++x) {
@@ -93,7 +92,6 @@ void sunlightFilter(Image& img) {
     }
 }
 
-// Filter 11: Resizing Images
 void filter_Resize(Image& img, int newWidth, int newHeight) {
     Image target(newWidth, newHeight);
     double scaleX = (double)img.width / newWidth;
@@ -110,7 +108,7 @@ void filter_Resize(Image& img, int newWidth, int newHeight) {
     }
     img = target;
 }
-// Filter 13: MErge Image
+
 void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
     int w, h;
 
@@ -130,19 +128,16 @@ void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
             int x1, y1, x2, y2;
 
             if (mode == 1) {
-                // nearest-neighbor resize of each image to (w, h)
                 x1 = x * img1.width / w;
                 y1 = y * img1.height / h;
                 x2 = x * img2.width / w;
                 y2 = y * img2.height / h;
             }
             else {
-                // common area: same coordinates in both images
                 x1 = x2 = x;
                 y1 = y2 = y;
             }
-
-            for (int c = 0; c < 3; ++c) {
+for (int c = 0; c < 3; ++c) {
                 int sum = img1(x1, y1, c) + img2(x2, y2, c);
                 result(x, y, c) = static_cast<unsigned char>(sum / 2);
             }
@@ -151,7 +146,6 @@ void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
     output = result;
 }
 
-// Filter 15: TV Effect
 void filter_TVEffect(Image& img) {
     for (int j = 0; j < img.height; ++j) {
         if (j % 2 == 0) {
@@ -161,6 +155,25 @@ void filter_TVEffect(Image& img) {
                 }
             }
         }
+    }
+}
+
+void rotateImage(Image& img) {
+    int choice;
+    cout << "Choose angle (90, 180, 270): ";
+    cin >> choice;
+
+    int times = choice / 90;
+    for (int t = 0; t < times; ++t) {
+        Image rotated(img.height, img.width);
+        for (int i = 0; i < img.width; ++i) {
+            for (int j = 0; j < img.height; ++j) {
+                for (int k = 0; k < img.channels; ++k) {
+                    rotated.setPixel(j, img.width - 1 - i, k, img.getPixel(i, j, k));
+                }
+            }
+        }
+        img = rotated;
     }
 }
 
@@ -174,86 +187,84 @@ int main() {
 
     while (true) {
         cout << "\n--- Image Processing Menu ---\n";
-        cout << "1.Filter 1: Gray Scale\n";
-        cout << "2. Filter 3: Invert Image\n";
-        cout << "3. Filter 5: Detect Edges\n";
-        cout << "4. Filter 7: Lighten / Darken Image\n";
-        cout << "5. Filter 9: Merge Image\n" ;
-        cout << "6. Filter 11: Resize Image\n";
-        cout << "7. Filter 13: Sunlight \n" ;
-        cout << "8. Filter 15: TV Effect\n";
+        cout << "1. Gray Scale\n";
+        cout << "2. Invert Image\n";
+        cout << "3. Detect Edges\n";
+        cout << "4. Lighten / Darken Image\n";
+        cout << "5. Merge Image\n";
+        cout << "6. Resize Image\n";
+        cout << "7. Sunlight\n";
+        cout << "8. TV Effect\n";
+        cout << "9. Rotate Image\n";
         cout << "17. Save and Exit\n";
         cout << "Choose an option: ";
         cin >> choice;
-          if (choice == 1)
-        {
-            filter_Grayscale(img) ;
+
+        if (choice == 1) {
+            filter_Grayscale(img);
+            cout << "Gray Scale filter applied.\n";
         }
-        else if (choice == 3) {
+        else if (choice == 2) {
             filter_Invert(img);
             cout << "Invert filter applied.\n";
         }
-        else if (choice == 5) {
+        else if (choice == 3) {
             filter_DetectEdges(img);
             cout << "Detect Edges filter applied.\n";
         }
-       
-        else if (choice == 7) {
+        else if (choice == 4) {
             int subChoice;
             cout << "1. Lighten\n2. Darken\nChoice: ";
             cin >> subChoice;
             filter_LightenDarken(img, subChoice == 1);
             cout << "Lighten/Darken filter applied.\n";
         }
-        else if (choice == 11) {
+        else if (choice == 5) {
+            string filename2;
+            cout << "Enter second image filename to load: ";
+            cin >> filename2;
+
+            Image img2(filename2);
+            Image mergedImage;
+
+            cout << "Choose merge mode:\n";
+            cout << "1. Resize both images to the biggest width and height, then merge\n";
+            cout << "2. Merge only the common area (smaller width and smaller height)\n";
+            cout << "Choice: ";
+            int mergeMode;
+            cin >> mergeMode;
+
+            mergeImages(img, img2, mergedImage, mergeMode);
+            img = mergedImage;
+            cout << "Merge filter applied.\n";
+        }
+        else if (choice == 6) {
             int w, h;
             cout << "Enter new width: ";
             cin >> w;
             cout << "Enter new height: ";
             cin >> h;
             filter_Resize(img, w, h);
-            cout << "Resize filter applied.\n"; 
+            cout << "Resize filter applied.\n";
         }
-        
-
-
-         else if (choice == 9) {
-          string filename2;
-          cout << "Enter second image filename to load: ";
-          cin >> filename2;
-
-          Image img2(filename2);
-           Image mergedImage;
-
-         cout << "Choose merge mode:\n";
-         cout << "1. Resize both images to the biggest width and height, then merge\n";
-         cout << "2. Merge only the common area (smaller width and smaller height)\n";
-         cout << "Choice: ";
-         int mergeMode;
-         cin >> mergeMode;
-         
-        
-        mergeImages(img, img2, mergedImage, mergeMode);
-        img = mergedImage; 
-         }
-    
-         
-        else if (choice == 15) {
+        else if (choice == 7) {
+            sunlightFilter(img);
+            cout << "Sunlight filter applied.\n";
+        }
+        else if (choice == 8) {
             filter_TVEffect(img);
             cout << "TV Effect filter applied.\n";
         }
-         else if (choice == 13) {
-        sunlightFilter(img);
-        cout << "Sunlight filter applied.\n";
+        else if (choice == 9) {
+            rotateImage(img);
+            cout << "Rotate filter applied.\n";
         }
-    
         else if (choice == 17) {
             string outFilename;
             cout << "Enter output image filename: ";
             cin >> outFilename;
             img.saveImage(outFilename);
             cout << "Image saved successfully. Exiting...\n";
-            
             break;
         }
         else {
