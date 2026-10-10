@@ -47,6 +47,26 @@ void filter_DetectEdges(Image& img) {
     img = target;
 }
 
+void filter_EdgeDetection2(Image& img) {
+    for (int i = 0; i < img.width - 1; ++i) {
+        for (int j = 0; j < img.height - 1; ++j) {
+            int p1 = img.getPixel(i, j, 0);
+            int p2 = img.getPixel(i + 1, j, 0);
+
+            if (abs(p1 - p2) > 40) {
+                img.setPixel(i, j, 0, 0);
+                img.setPixel(i, j, 1, 0);
+                img.setPixel(i, j, 2, 0);
+            }
+            else {
+                img.setPixel(i, j, 0, 255);
+                img.setPixel(i, j, 1, 255);
+                img.setPixel(i, j, 2, 255);
+            }
+        }
+    }
+}
+
 void filter_Invert(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
@@ -125,7 +145,8 @@ void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            int x1, y1, x2, y2;if (mode == 1) {
+            int x1, y1, x2, y2;
+            if (mode == 1) {
                 x1 = x * img1.width / w;
                 y1 = y * img1.height / h;
                 x2 = x * img2.width / w;
@@ -152,6 +173,22 @@ void filter_TVEffect(Image& img) {
                     unsigned char val = img.getPixel(i, j, k);
                     img.setPixel(i, j, k, val * 0.5);
                 }
+            }
+        }
+    }
+}
+
+void filter_TVEffect2(Image& img) {
+    for (int i = 0; i < img.width; ++i) {
+        for (int j = 0; j < img.height; ++j) {
+            if (j % 4 == 0) {
+                unsigned char r = img.getPixel(i, j, 0);
+                unsigned char g = img.getPixel(i, j, 1);
+                unsigned char b = img.getPixel(i, j, 2);
+
+                img.setPixel(i, j, 0, r * 0.5);
+                img.setPixel(i, j, 1, g * 0.5);
+                img.setPixel(i, j, 2, b * 0.5);
             }
         }
     }
@@ -195,6 +232,8 @@ int main() {
         cout << "7. Sunlight\n";
         cout << "8. TV Effect\n";
         cout << "9. Rotate Image\n";
+        cout << "10. Alternative Edge Detection\n";
+        cout << "11. Alternative TV Effect\n";
         cout << "17. Save and Exit\n";
         cout << "Choose an option: ";
         cin >> choice;
@@ -248,7 +287,8 @@ int main() {
         }
         else if (choice == 7) {
             sunlightFilter(img);
-            cout << "Sunlight filter applied.\n";}
+            cout << "Sunlight filter applied.\n";
+        }
         else if (choice == 8) {
             filter_TVEffect(img);
             cout << "TV Effect filter applied.\n";
@@ -256,6 +296,14 @@ int main() {
         else if (choice == 9) {
             rotateImage(img);
             cout << "Rotate filter applied.\n";
+        }
+        else if (choice == 10) {
+            filter_EdgeDetection2(img);
+            cout << "Alternative Edge Detection applied.\n";
+        }
+        else if (choice == 11) {
+            filter_TVEffect2(img);
+            cout << "Alternative TV Effect applied.\n";
         }
         else if (choice == 17) {
             string outFilename;
