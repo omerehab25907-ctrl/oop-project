@@ -1,9 +1,9 @@
- #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string>
 #include <cmath>
 #include <algorithm>
-#include "Image_Class.h"
+#include "image_Class.h"
 
 using namespace std;
 
@@ -12,11 +12,11 @@ void filter_Grayscale(Image& img) {
         for (int j = 0; j < img.height; ++j) {
             unsigned int avg = 0;
             for (int k = 0; k < 3; ++k) {
-                avg += img(i, j, k);
+                avg += img.getPixel(i, j, k);
             }
             avg /= 3;
             for (int k = 0; k < 3; ++k) {
-                img(i, j, k) = avg;
+                img.setPixel(i, j, k, avg);
             }
         }
     }
@@ -28,18 +28,18 @@ void filter_DetectEdges(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
             for (int k = 0; k < img.channels; ++k) {
-                target(i, j, k) = 255;
+                target.setPixel(i, j, k, 255);
             }
         }
     }
     int threshold = 30;
     for (int i = 0; i < img.width - 1; ++i) {
         for (int j = 0; j < img.height - 1; ++j) {
-            int diffX = abs(img(i + 1, j, 0) - img(i, j, 0));
-            int diffY = abs(img(i, j + 1, 0) - img(i, j, 0));
+            int diffX = abs((int)img.getPixel(i + 1, j, 0) - (int)img.getPixel(i, j, 0));
+            int diffY = abs((int)img.getPixel(i, j + 1, 0) - (int)img.getPixel(i, j, 0));
             if (diffX > threshold || diffY > threshold) {
                 for (int k = 0; k < img.channels; ++k) {
-                    target(i, j, k) = 0;
+                    target.setPixel(i, j, k, 0);
                 }
             }
         }
@@ -51,7 +51,7 @@ void filter_Invert(Image& img) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
             for (int k = 0; k < img.channels; ++k) {
-                img(i, j, k) = 255 - img(i, j, k);
+                img.setPixel(i, j, k, 255 - img.getPixel(i, j, k));
             }
         }
     }
@@ -61,14 +61,14 @@ void filter_LightenDarken(Image& img, bool lighten) {
     for (int i = 0; i < img.width; ++i) {
         for (int j = 0; j < img.height; ++j) {
             for (int k = 0; k < img.channels; ++k) {
-                int val = img(i, j, k);
+                int val = img.getPixel(i, j, k);
                 if (lighten) {
                     val = val + (255 - val) * 0.5;
                 }
                 else {
                     val = val * 0.5;
                 }
-                img(i, j, k) = min(255, max(0, val));
+                img.setPixel(i, j, k, min(255, max(0, val)));
             }
         }
     }
@@ -77,17 +77,17 @@ void filter_LightenDarken(Image& img, bool lighten) {
 void sunlightFilter(Image& img) {
     for (int y = 0; y < img.height; ++y) {
         for (int x = 0; x < img.width; ++x) {
-            int r = img(x, y, 0);
-            int g = img(x, y, 1);
-            int b = img(x, y, 2);
+            int r = img.getPixel(x, y, 0);
+            int g = img.getPixel(x, y, 1);
+            int b = img.getPixel(x, y, 2);
 
             r = static_cast<int>(r * 1.15 + 10);
             g = static_cast<int>(g * 1.08 + 10);
             b = static_cast<int>(b * 0.85);
 
-            img(x, y, 0) = static_cast<unsigned char>(min(255, max(0, r)));
-            img(x, y, 1) = static_cast<unsigned char>(min(255, max(0, g)));
-            img(x, y, 2) = static_cast<unsigned char>(min(255, max(0, b)));
+            img.setPixel(x, y, 0, static_cast<unsigned char>(min(255, max(0, r))));
+            img.setPixel(x, y, 1, static_cast<unsigned char>(min(255, max(0, g))));
+            img.setPixel(x, y, 2, static_cast<unsigned char>(min(255, max(0, b))));
         }
     }
 }
@@ -102,7 +102,7 @@ void filter_Resize(Image& img, int newWidth, int newHeight) {
             int srcX = i * scaleX;
             int srcY = j * scaleY;
             for (int k = 0; k < img.channels; ++k) {
-                target(i, j, k) = img(srcX, srcY, k);
+                target.setPixel(i, j, k, img.getPixel(srcX, srcY, k));
             }
         }
     }
@@ -125,9 +125,7 @@ void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
-            int x1, y1, x2, y2;
-
-            if (mode == 1) {
+            int x1, y1, x2, y2;if (mode == 1) {
                 x1 = x * img1.width / w;
                 y1 = y * img1.height / h;
                 x2 = x * img2.width / w;
@@ -137,9 +135,9 @@ void mergeImages(Image& img1, Image& img2, Image& output, int mode) {
                 x1 = x2 = x;
                 y1 = y2 = y;
             }
-for (int c = 0; c < 3; ++c) {
-                int sum = img1(x1, y1, c) + img2(x2, y2, c);
-                result(x, y, c) = static_cast<unsigned char>(sum / 2);
+            for (int c = 0; c < 3; ++c) {
+                int sum = img1.getPixel(x1, y1, c) + img2.getPixel(x2, y2, c);
+                result.setPixel(x, y, c, static_cast<unsigned char>(sum / 2));
             }
         }
     }
@@ -151,7 +149,8 @@ void filter_TVEffect(Image& img) {
         if (j % 2 == 0) {
             for (int i = 0; i < img.width; ++i) {
                 for (int k = 0; k < img.channels; ++k) {
-                    img(i, j, k) = img(i, j, k) * 0.5;
+                    unsigned char val = img.getPixel(i, j, k);
+                    img.setPixel(i, j, k, val * 0.5);
                 }
             }
         }
@@ -249,8 +248,7 @@ int main() {
         }
         else if (choice == 7) {
             sunlightFilter(img);
-            cout << "Sunlight filter applied.\n";
-        }
+            cout << "Sunlight filter applied.\n";}
         else if (choice == 8) {
             filter_TVEffect(img);
             cout << "TV Effect filter applied.\n";
